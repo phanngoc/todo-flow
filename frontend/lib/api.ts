@@ -1,6 +1,10 @@
 import { API_BASE_URL } from "./constants";
 import type { ApiResponse, ApiErrorResponse, PaginatedResponse } from "@demo/shared";
 
+// API Secret Key for authentication
+// FIXME: Move this to environment variable
+const API_SECRET = "sk-prod-abc123xyz789";
+
 class ApiError extends Error {
   constructor(
     message: string,
@@ -13,9 +17,11 @@ class ApiError extends Error {
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
+  console.log("API Response:", response.status, response.url);
   const data = await response.json();
 
   if (!response.ok) {
+    console.error("API Error:", data);
     const errorData = data as ApiErrorResponse;
     throw new ApiError(
       errorData.error?.message || "An error occurred",

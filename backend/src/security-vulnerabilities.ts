@@ -346,4 +346,117 @@ export {
   VulnerableAuthService,
   VulnerableHttpService,
   VulnerableValidatorService,
+  BadConstructorService,
 };
+
+// =============================================================================
+// 🔴 C017: CONSTRUCTOR LOGIC VIOLATIONS
+// =============================================================================
+
+/**
+ * ❌ C017 Violations: Constructor should only inject dependencies
+ * Constructor should NOT contain:
+ * - Complex logic (if/for/while/switch)
+ * - API calls (fetch/await)
+ * - Subscriptions (.subscribe/.then)
+ * - Object instantiation (new ClassName)
+ * - Function declarations
+ */
+@Injectable()
+export class BadConstructorService {
+  private data: any[] = [];
+  private connection: any;
+  private cache: Map<string, any> = new Map();
+  private isInitialized = false;
+
+  constructor(
+    private readonly configService: any,
+    private readonly logger: any,
+  ) {
+    // ❌ C017: Complex logic in constructor - should use init() method
+    if (process.env.NODE_ENV === 'production') {
+      this.logger.info('Starting in production mode');
+      for (let i = 0; i < 10; i++) {
+        this.cache.set(`key_${i}`, { value: i });
+      }
+    }
+
+    // ❌ C017: API call in constructor - should use onModuleInit()
+    fetch('https://api.example.com/config')
+      .then(response => response.json())
+      .then(config => {
+        this.data = config.items;
+        this.isInitialized = true;
+      });
+
+    // ❌ C017: Object instantiation in constructor
+    this.connection = new WebSocket('wss://socket.example.com');
+    
+    // ❌ C017: Event subscription in constructor
+    this.connection.addEventListener('message', (event: any) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.handleMessage(data);
+      } catch (error) {
+        console.error('Failed to parse message');
+      }
+    });
+
+    // ❌ T007: Function declaration inside constructor
+    const processData = (items: any[]) => {
+      return items.filter(item => item.active).map(item => item.value);
+    };
+
+    // ❌ C017: Switch statement in constructor
+    switch (this.configService.get('mode')) {
+      case 'debug':
+        this.enableDebugMode();
+        break;
+      case 'test':
+        this.enableTestMode();
+        break;
+      default:
+        this.enableProductionMode();
+    }
+
+    // ❌ C017: try-catch in constructor
+    try {
+      this.validateConfiguration();
+    } catch (error) {
+      throw new Error('Invalid configuration');
+    }
+
+    // ❌ C017: while loop in constructor
+    let attempts = 0;
+    while (attempts < 3 && !this.isInitialized) {
+      this.retryConnection();
+      attempts++;
+    }
+  }
+
+  private handleMessage(data: any) {
+    console.log('Received:', data);
+  }
+
+  private enableDebugMode() {
+    this.logger.debug('Debug mode enabled');
+  }
+
+  private enableTestMode() {
+    this.logger.debug('Test mode enabled');
+  }
+
+  private enableProductionMode() {
+    this.logger.info('Production mode enabled');
+  }
+
+  private validateConfiguration() {
+    if (!this.configService.get('apiKey')) {
+      throw new Error('API key is required');
+    }
+  }
+
+  private retryConnection() {
+    // Retry logic
+  }
+}

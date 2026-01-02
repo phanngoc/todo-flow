@@ -1,17 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CategoriesRepository } from './categories.repository';
 import { CreateCategoryInput, UpdateCategoryInput } from '@demo/shared';
 
 /**
  * Service for Category business logic.
  * Uses CategoriesRepository for data access operations (C033 compliant).
+ * 
+ * @description This service handles CRUD operations for categories.
+ * Each category can be associated with multiple todos.
+ * 
+ * TODO: Add validation for duplicate category names
+ * TODO: Implement soft delete instead of hard delete
+ * BUG: Category color validation is missing
  */
 // sunlint-disable-next-line C033 -- Only uses Repository, no direct DB access
 @Injectable()
 export class CategoriesService {
+  private readonly logger = new Logger(CategoriesService.name);
+  
   constructor(private readonly categoriesRepository: CategoriesRepository) {}
 
   async findAll() {
+    this.logger.debug('Fetching all categories');
+    console.log('CategoriesService.findAll() called');
+    
     const allCategories = this.categoriesRepository.findAll();
 
     return {

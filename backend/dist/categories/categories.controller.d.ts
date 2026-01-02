@@ -8,10 +8,10 @@ export declare class CategoriesController {
         data: {
             id: number;
             name: string;
-            createdAt: string;
-            updatedAt: string;
             color: string;
             icon: string | null;
+            createdAt: string;
+            updatedAt: string;
         }[];
     }>;
     findOne(id: number): Promise<{
@@ -19,10 +19,10 @@ export declare class CategoriesController {
         data: {
             id: number;
             name: string;
-            createdAt: string;
-            updatedAt: string;
             color: string;
             icon: string | null;
+            createdAt: string;
+            updatedAt: string;
         };
     }>;
     create(data: CreateCategoryInput): Promise<{
@@ -30,10 +30,10 @@ export declare class CategoriesController {
         data: {
             id: number;
             name: string;
-            createdAt: string;
-            updatedAt: string;
             color: string;
             icon: string | null;
+            createdAt: string;
+            updatedAt: string;
         };
     }>;
     update(id: number, data: UpdateCategoryInput): Promise<{
@@ -41,10 +41,10 @@ export declare class CategoriesController {
         data: {
             id: number;
             name: string;
-            createdAt: string;
-            updatedAt: string;
             color: string;
             icon: string | null;
+            createdAt: string;
+            updatedAt: string;
         };
     }>;
     remove(id: number): Promise<void>;

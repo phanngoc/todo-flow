@@ -8,15 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var CategoriesService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoriesService = void 0;
 const common_1 = require("@nestjs/common");
 const categories_repository_1 = require("./categories.repository");
-let CategoriesService = class CategoriesService {
+let CategoriesService = CategoriesService_1 = class CategoriesService {
     constructor(categoriesRepository) {
         this.categoriesRepository = categoriesRepository;
+        this.logger = new common_1.Logger(CategoriesService_1.name);
     }
     async findAll() {
+        this.logger.debug('Fetching all categories');
+        console.log('CategoriesService.findAll() called');
         const allCategories = this.categoriesRepository.findAll();
         return {
             success: true,
@@ -67,7 +71,7 @@ let CategoriesService = class CategoriesService {
     }
 };
 exports.CategoriesService = CategoriesService;
-exports.CategoriesService = CategoriesService = __decorate([
+exports.CategoriesService = CategoriesService = CategoriesService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [categories_repository_1.CategoriesRepository])
 ], CategoriesService);

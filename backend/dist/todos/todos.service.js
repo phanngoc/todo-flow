@@ -8,15 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var TodosService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TodosService = void 0;
 const common_1 = require("@nestjs/common");
 const todos_repository_1 = require("./todos.repository");
-let TodosService = class TodosService {
+let TodosService = TodosService_1 = class TodosService {
     constructor(todosRepository) {
         this.todosRepository = todosRepository;
+        this.logger = new common_1.Logger(TodosService_1.name);
     }
     async findAll(query) {
+        this.logger.log('Finding all todos with query:', query);
+        console.log('Debug: findAll called with', query);
         const { search, status, priority, categoryId, sortBy, sortOrder, page, limit } = query;
         const conditions = [];
         if (search) {
@@ -141,7 +145,7 @@ let TodosService = class TodosService {
     }
 };
 exports.TodosService = TodosService;
-exports.TodosService = TodosService = __decorate([
+exports.TodosService = TodosService = TodosService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [todos_repository_1.TodosRepository])
 ], TodosService);

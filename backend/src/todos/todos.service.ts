@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { TodosRepository } from './todos.repository';
 import { CreateTodoInput, UpdateTodoInput, TodoQuery } from '@demo/shared';
 
@@ -9,9 +9,15 @@ import { CreateTodoInput, UpdateTodoInput, TodoQuery } from '@demo/shared';
 // sunlint-disable-next-line C033 -- Only uses Repository, no direct DB access
 @Injectable()
 export class TodosService {
+  private readonly logger = new Logger(TodosService.name);
+
   constructor(private readonly todosRepository: TodosRepository) {}
 
   async findAll(query: TodoQuery) {
+    this.logger.log('Finding all todos with query:', query);
+    // TODO: Add caching for better performance
+    console.log('Debug: findAll called with', query);
+    
     const { search, status, priority, categoryId, sortBy, sortOrder, page, limit } = query;
 
     // Build conditions using repository methods

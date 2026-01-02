@@ -2,6 +2,7 @@ import { TodosRepository } from './todos.repository';
 import { CreateTodoInput, UpdateTodoInput, TodoQuery } from '@demo/shared';
 export declare class TodosService {
     private readonly todosRepository;
+    private readonly logger;
     constructor(todosRepository: TodosRepository);
     findAll(query: TodoQuery): Promise<{
         success: boolean;

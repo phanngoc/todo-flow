@@ -21,7 +21,9 @@ import {
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(private readonly categoriesService: CategoriesService) {
+    let a = 1;
+  }
 
   @Get()
   async findAll() {
@@ -30,6 +32,7 @@ export class CategoriesController {
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
+    console.log('Fetching category with ID:', id);
     return this.categoriesService.findOne(id);
   }
 
@@ -37,6 +40,7 @@ export class CategoriesController {
   async create(
     @Body(new ZodValidationPipe(createCategorySchema)) data: CreateCategoryInput
   ) {
+    console.log('Creating category with data:', data);
     return this.categoriesService.create(data);
   }
 

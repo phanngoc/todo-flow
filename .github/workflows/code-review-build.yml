@@ -1,0 +1,140 @@
+name: 🔍 Code Review (Build from Source)
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  code-review:
+    name: 🔍 Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: 📥 Checkout Demo Project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📥 Checkout code-rv
+        uses: actions/checkout@v4
+        with:
+          repository: sun-asterisk/engineer-excellence
+          path: _code-rv-build
+          sparse-checkout: |
+            code-rv-app
+
+      - name: 🦀 Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: 📦 Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: _code-rv-build/code-rv-app
+
+      - name: 🔨 Build code-rv
+        run: |
+          cd _code-rv-build/code-rv-app
+          cargo build --release
+          sudo cp target/release/code-rv /usr/local/bin/code-rv
+          code-rv --version
+
+      - name: 🔍 Run Code Review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="HEAD~1"
+            HEAD_SHA="HEAD"
+          fi
+          
+          echo "🔍 Reviewing: ${BASE_SHA}..${HEAD_SHA}"
+          
+          # Run without AI if no API key
+          if [ -z "${ANTHROPIC_API_KEY}" ]; then
+            echo "⚠️ No ANTHROPIC_API_KEY, running static analysis only"
+            code-rv review \
+              --path . \
+              --from "${BASE_SHA}" \
+              --to "${HEAD_SHA}" \
+              --no-ai \
+              --output markdown > review-output.md 2>&1 || true
+          else
+            code-rv review \
+              --path . \
+              --from "${BASE_SHA}" \
+              --to "${HEAD_SHA}" \
+              --ai \
+              --output markdown > review-output.md 2>&1 || true
+          fi
+          
+          cat review-output.md
+
+      - name: 💬 Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            let reviewOutput = '';
+            
+            try {
+              reviewOutput = fs.readFileSync('review-output.md', 'utf8');
+            } catch (e) {
+              reviewOutput = '⚠️ Failed to generate review output';
+            }
+            
+            const maxLength = 60000;
+            if (reviewOutput.length > maxLength) {
+              reviewOutput = reviewOutput.substring(0, maxLength) + '\n\n... (truncated)';
+            }
+            
+            const body = `## 🔍 Code Review Results
+            
+            ${reviewOutput}
+            
+            ---
+            *Automated review by [code-rv](https://github.com/sun-asterisk/engineer-excellence/tree/main/code-rv-app)*`;
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🔍 Code Review Results')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: 📊 Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-review-report
+          path: review-output.md

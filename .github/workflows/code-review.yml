@@ -41,7 +41,7 @@ jobs:
           curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
           cd code-rv-${CODE_RV_VERSION}
           echo "📦 Installing dependencies..."
-          npm ci
+          npm install
           echo "🔨 Building..."
           npm run build
           echo "📦 Installing globally..."

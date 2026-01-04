@@ -45,6 +45,37 @@ jobs:
           sudo cp target/release/code-rv /usr/local/bin/
           code-rv --version
 
+      - name: 🌐 Install GitLab Knowledge Graph (GKG)
+        run: |
+          echo "📥 Installing GKG for code graph analysis..."
+          curl -fsSL https://gitlab.com/gitlab-org/rust/knowledge-graph/-/raw/main/install.sh | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          gkg --version
+
+      - name: 🗄️ Start GKG Server & Index Project
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          
+          echo "🚀 Starting GKG server in background..."
+          gkg server start --detached
+          
+          # Wait for server to be ready
+          echo "⏳ Waiting for GKG server to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:27495/api/info > /dev/null 2>&1; then
+              echo "✅ GKG server is ready!"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Index the current project
+          echo "📊 Indexing project for code graph analysis..."
+          gkg index .
+          
+          echo "✅ GKG setup complete!"
+
       - name: 🔍 Run Code Review (PR)
         if: github.event_name == 'pull_request'
         id: review-pr
@@ -186,6 +217,15 @@ jobs:
           path: review-output.md
           retention-days: 30
 
+      - name: 🛑 Stop GKG Server
+        if: always()
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          if command -v gkg &> /dev/null; then
+            echo "🛑 Stopping GKG server..."
+            gkg server stop || true
+          fi
+
   static-analysis-only:
     name: 📋 Static Analysis (No AI)
     runs-on: ubuntu-latest
@@ -197,27 +237,62 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Download code-rv
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📦 Install code-rv from source
         run: |
-          curl -fsSL -o code-rv-linux-x64.tar.gz \
-            "https://github.com/sun-asterisk/engineer-excellence/releases/download/code-rv-v${CODE_RV_VERSION}/code-rv-linux-x64.tar.gz" \
-            || exit 0
-          tar -xzf code-rv-linux-x64.tar.gz 2>/dev/null || exit 0
-          chmod +x code-rv-linux-x64 2>/dev/null || exit 0
-          sudo mv code-rv-linux-x64 /usr/local/bin/code-rv 2>/dev/null || exit 0
+          echo "📥 Downloading code-rv source..."
+          curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
+          cd code-rv-*
+          cargo build --release
+          sudo cp target/release/code-rv /usr/local/bin/
+          code-rv --version
+
+      - name: 🌐 Install GitLab Knowledge Graph (GKG)
+        run: |
+          echo "📥 Installing GKG for code graph analysis..."
+          curl -fsSL https://gitlab.com/gitlab-org/rust/knowledge-graph/-/raw/main/install.sh | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          gkg --version
+
+      - name: 🗄️ Start GKG Server & Index Project
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          
+          echo "🚀 Starting GKG server in background..."
+          gkg server start --detached
+          
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:27495/api/info > /dev/null 2>&1; then
+              echo "✅ GKG server is ready!"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Index the current project
+          echo "📊 Indexing project..."
+          gkg index .
 
       - name: 📋 Run Static Analysis
         run: |
-          if command -v code-rv &> /dev/null; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            
-            code-rv review \
-              --path . \
-              --from "${BASE_SHA}" \
-              --to "${HEAD_SHA}" \
-              --no-ai \
-              --output terminal
-          else
-            echo "⚠️ code-rv not available, skipping static analysis"
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          
+          code-rv review \
+            --path . \
+            --from "${BASE_SHA}" \
+            --to "${HEAD_SHA}" \
+            --no-ai \
+            --output terminal
+
+      - name: 🛑 Stop GKG Server
+        if: always()
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          if command -v gkg &> /dev/null; then
+            gkg server stop || true
           fi

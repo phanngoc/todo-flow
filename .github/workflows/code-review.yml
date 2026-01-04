@@ -30,11 +30,22 @@ jobs:
         with:
           fetch-depth: 0  # Full history for diff analysis
 
-      - name: 📦 Install code-rv
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install code-rv from source
         run: |
+          echo "📥 Downloading code-rv source..."
           curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
-          chmod +x code-rv-linux-x64
-          sudo mv code-rv-linux-x64 /usr/local/bin/code-rv
+          cd code-rv-${CODE_RV_VERSION}
+          echo "📦 Installing dependencies..."
+          npm ci
+          echo "🔨 Building..."
+          npm run build
+          echo "📦 Installing globally..."
+          npm link
           code-rv --version
 
       - name: 🔍 Run Code Review (PR)

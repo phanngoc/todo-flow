@@ -30,26 +30,19 @@ jobs:
         with:
           fetch-depth: 0  # Full history for diff analysis
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-action@stable
 
       - name: 📦 Install code-rv from source
         run: |
           echo "📥 Downloading code-rv source..."
           curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
-          echo "📂 Listing extracted contents..."
-          ls -la
           cd code-rv-*
           echo "📂 Current directory: $(pwd)"
-          ls -la
-          echo "📦 Installing dependencies..."
-          npm install
-          echo "🔨 Building..."
-          npm run build
-          echo "📦 Installing globally..."
-          npm link
+          echo "🔨 Building with Cargo..."
+          cargo build --release
+          echo "📦 Installing..."
+          sudo cp target/release/code-rv /usr/local/bin/
           code-rv --version
 
       - name: 🔍 Run Code Review (PR)

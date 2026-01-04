@@ -30,16 +30,9 @@ jobs:
         with:
           fetch-depth: 0  # Full history for diff analysis
 
-      - name: 📦 Download code-rv
+      - name: 📦 Install code-rv
         run: |
-          echo "📥 Downloading code-rv..."
-          curl -fsSL -o code-rv-linux-x64.tar.gz \
-            "https://github.com/sun-asterisk/engineer-excellence/releases/download/code-rv-v${CODE_RV_VERSION}/code-rv-linux-x64.tar.gz" \
-            || {
-              echo "⚠️ Release not found, building from source..."
-              exit 1
-            }
-          tar -xzf code-rv-linux-x64.tar.gz
+          curl -fsSL https://github.com/phanngoc/code-rv/releases/download/v0.2.0/code-rv-linux-x64.tar.gz | tar -xz
           chmod +x code-rv-linux-x64
           sudo mv code-rv-linux-x64 /usr/local/bin/code-rv
           code-rv --version

@@ -68,6 +68,10 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           
+          # Index the project FIRST (before server starts)
+          echo "📊 Indexing project for code graph analysis..."
+          gkg index .
+          
           echo "🚀 Starting GKG server in background..."
           gkg server start --detached
           
@@ -80,10 +84,6 @@ jobs:
             fi
             sleep 1
           done
-          
-          # Index the current project
-          echo "📊 Indexing project for code graph analysis..."
-          gkg index .
           
           echo "✅ GKG setup complete!"
 
@@ -283,6 +283,10 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           
+          # Index the project FIRST (before server starts)
+          echo "📊 Indexing project..."
+          gkg index .
+          
           echo "🚀 Starting GKG server in background..."
           gkg server start --detached
           
@@ -294,10 +298,6 @@ jobs:
             fi
             sleep 1
           done
-          
-          # Index the current project
-          echo "📊 Indexing project..."
-          gkg index .
 
       - name: 📋 Run Static Analysis
         run: |

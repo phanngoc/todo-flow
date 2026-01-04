@@ -15,6 +15,7 @@ on:
 
 env:
   CODE_RV_VERSION: "0.2.0"
+  CODE_RV_REPO: "phanngoc/code-rv"
 
 jobs:
   code-review:
@@ -30,19 +31,29 @@ jobs:
         with:
           fetch-depth: 0  # Full history for diff analysis
 
-      - name: 🦀 Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: 📦 Install code-rv from source
+      - name: 📦 Download code-rv binary
         run: |
-          echo "📥 Downloading code-rv source..."
-          curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
-          cd code-rv-*
-          echo "📂 Current directory: $(pwd)"
-          echo "🔨 Building with Cargo..."
-          cargo build --release
-          echo "📦 Installing..."
-          sudo cp target/release/code-rv /usr/local/bin/
+          echo "📥 Downloading code-rv pre-built binary..."
+          # Try to download from release first
+          DOWNLOAD_URL="https://github.com/${CODE_RV_REPO}/releases/download/v${CODE_RV_VERSION}/code-rv-linux-x64.tar.gz"
+          
+          if curl -fsSL -o code-rv.tar.gz "$DOWNLOAD_URL" 2>/dev/null; then
+            echo "✅ Downloaded from release"
+            tar -xzf code-rv.tar.gz
+            chmod +x code-rv-linux-x64
+            sudo mv code-rv-linux-x64 /usr/local/bin/code-rv
+          else
+            echo "⚠️ Release not found, building from source..."
+            # Fallback: Setup Rust and build
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source "$HOME/.cargo/env"
+            
+            curl -fsSL "https://github.com/${CODE_RV_REPO}/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz" | tar -xz
+            cd code-rv-*
+            cargo build --release
+            sudo cp target/release/code-rv /usr/local/bin/
+          fi
+          
           code-rv --version
 
       - name: 🌐 Install GitLab Knowledge Graph (GKG)
@@ -237,16 +248,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🦀 Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: 📦 Install code-rv from source
+      - name: 📦 Download code-rv binary
         run: |
-          echo "📥 Downloading code-rv source..."
-          curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
-          cd code-rv-*
-          cargo build --release
-          sudo cp target/release/code-rv /usr/local/bin/
+          echo "📥 Downloading code-rv pre-built binary..."
+          DOWNLOAD_URL="https://github.com/${CODE_RV_REPO}/releases/download/v${CODE_RV_VERSION}/code-rv-linux-x64.tar.gz"
+          
+          if curl -fsSL -o code-rv.tar.gz "$DOWNLOAD_URL" 2>/dev/null; then
+            echo "✅ Downloaded from release"
+            tar -xzf code-rv.tar.gz
+            chmod +x code-rv-linux-x64
+            sudo mv code-rv-linux-x64 /usr/local/bin/code-rv
+          else
+            echo "⚠️ Release not found, building from source..."
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source "$HOME/.cargo/env"
+            
+            curl -fsSL "https://github.com/${CODE_RV_REPO}/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz" | tar -xz
+            cd code-rv-*
+            cargo build --release
+            sudo cp target/release/code-rv /usr/local/bin/
+          fi
+          
           code-rv --version
 
       - name: 🌐 Install GitLab Knowledge Graph (GKG)

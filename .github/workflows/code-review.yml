@@ -324,7 +324,6 @@ jobs:
             --path . \
             --from "${BASE_SHA}" \
             --to "${HEAD_SHA}" \
-            --no-ai \
             --output terminal
 
       - name: 🛑 Stop GKG Server

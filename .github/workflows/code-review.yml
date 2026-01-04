@@ -240,7 +240,6 @@ jobs:
   static-analysis-only:
     name: 📋 Static Analysis (No AI)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
 
     steps:
       - name: 📥 Checkout
@@ -301,8 +300,25 @@ jobs:
 
       - name: 📋 Run Static Analysis
         run: |
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          # Handle both PR and Push events
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            # Push event
+            BEFORE_SHA="${{ github.event.before }}"
+            AFTER_SHA="${{ github.sha }}"
+            
+            # Handle initial push (before is all zeros)
+            if [[ "${BEFORE_SHA}" == "0000000000000000000000000000000000000000" ]]; then
+              BASE_SHA="${AFTER_SHA}~1"
+            else
+              BASE_SHA="${BEFORE_SHA}"
+            fi
+            HEAD_SHA="${AFTER_SHA}"
+          fi
+          
+          echo "🔍 Comparing: ${BASE_SHA}..${HEAD_SHA}"
           
           code-rv review \
             --path . \

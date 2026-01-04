@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0  # Full history for diff analysis
 
       - name: 🦀 Setup Rust
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: 📦 Install code-rv from source
         run: |

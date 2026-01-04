@@ -14,7 +14,7 @@ on:
         type: string
 
 env:
-  CODE_RV_VERSION: "0.1.0"
+  CODE_RV_VERSION: "0.2.0"
 
 jobs:
   code-review:
@@ -32,7 +32,7 @@ jobs:
 
       - name: 📦 Install code-rv
         run: |
-          curl -fsSL https://github.com/phanngoc/code-rv/releases/download/v0.2.0/code-rv-linux-x64.tar.gz | tar -xz
+          curl -fsSL https://github.com/phanngoc/code-rv/archive/refs/tags/v${CODE_RV_VERSION}.tar.gz | tar -xz
           chmod +x code-rv-linux-x64
           sudo mv code-rv-linux-x64 /usr/local/bin/code-rv
           code-rv --version

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Todo App Frontend - Next.js + shadcn/ui + Zustand",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

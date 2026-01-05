@@ -46,7 +46,7 @@ export class TodosRepository {
   }
 
   findAll(options: FindAllOptions): Todo[] {
-    const { conditions, orderColumn, sortOrder, limit, offset } = options;
+    const { conditions, orderColumn, sortOrder = 'desc', limit, offset } = options;
     const whereClause = this.buildWhereClause(conditions);
     const sortFunction = this.getSortFunction(sortOrder);
 

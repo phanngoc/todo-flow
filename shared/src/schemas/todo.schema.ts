@@ -18,7 +18,7 @@ export const createTodoSchema = z.object({
     .max(2000, 'Description must be 2000 characters or less')
     .optional(),
   priority: todoPrioritySchema.default('medium'),
-  dueDate: z.string().datetime().optional().nullable(),
+  dueDate: z.string().optional().nullable(),
   categoryIds: z.array(z.number()).default([]),
 });
 

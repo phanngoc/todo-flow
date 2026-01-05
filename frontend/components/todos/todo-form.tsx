@@ -51,7 +51,14 @@ export function TodoForm() {
   const onSubmit = async (data: CreateTodoInput) => {
     setIsSubmitting(true);
     try {
-      await addTodo(data);
+      // Transform dueDate to ISO 8601 format if present and not empty
+      const transformedData = {
+        ...data,
+        dueDate: data.dueDate && data.dueDate.trim() !== "" 
+          ? new Date(data.dueDate).toISOString() 
+          : null,
+      };
+      await addTodo(transformedData);
       reset();
       setIsExpanded(false);
       toast({
